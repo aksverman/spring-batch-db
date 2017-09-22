@@ -3,6 +3,7 @@ package com.rudra.aks.batch.config;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.SimpleJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
@@ -10,9 +11,15 @@ import org.springframework.batch.core.repository.support.JobRepositoryFactoryBea
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.retry.annotation.EnableRetry;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
+@EnableScheduling
+@EnableBatchProcessing
+//@EnableRetry
 public class DBConfig {
 
 	
@@ -20,15 +27,20 @@ public class DBConfig {
 	public DataSource	dataSource() {
 		BasicDataSource	dataSource = new BasicDataSource();
 		dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
-		dataSource.setUrl("jdbc:mysql://localhost:3306/test");
-		dataSource.setUsername( "root" );
-		dataSource.setPassword( "root" );
+		dataSource.setUrl("jdbc:mysql://10.98.8.100:3306/security_dev?useSSL=false&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC");
+		dataSource.setUsername( "devuser" );
+		dataSource.setPassword( "leo$123" );
 		return dataSource;	
 	}
 	
 	@Bean 
 	public PlatformTransactionManager	txManager() {
 		return new DataSourceTransactionManager(dataSource());
+	}
+	
+	@Bean
+	public ThreadPoolTaskScheduler	taskSchedular() {
+		return new ThreadPoolTaskScheduler();
 	}
 	
 	public JobRepository	getJobRepository() throws Exception {

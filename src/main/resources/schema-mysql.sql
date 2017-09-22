@@ -1,2 +1,8 @@
-drop if table USER_BATCH exists
-create table USER_BATCH (userid int, username varchar(20), emailid varchar(30));
+DROP TABLE IF EXISTS `USER_BATCH`;
+CREATE TABLE USER_BATCH (
+	`slno`	INT(10) NOT NULL AUTO_INCREMENT,
+	`userid` INT(10) NOT NULL, 
+	`username` VARCHAR(20),
+	`emailid` VARCHAR(30),
+	PRIMARY KEY (`slno`)
+);
