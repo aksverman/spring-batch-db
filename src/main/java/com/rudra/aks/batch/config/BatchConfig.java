@@ -9,17 +9,17 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.job.builder.FlowBuilder;
+import org.springframework.batch.core.job.flow.Flow;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
-import org.springframework.batch.item.ItemStream;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.ParseException;
 import org.springframework.batch.item.UnexpectedInputException;
 import org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.file.FlatFileItemReader;
-import org.springframework.batch.item.file.ResourcesItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
@@ -43,6 +43,8 @@ import com.rudra.aks.batch.model.UserBO;
 import com.rudra.aks.batch.processor.UserItemProcessor;
 import com.rudra.aks.batch.retry.CustomException;
 import com.rudra.aks.batch.retry.CustomRetryPolicy;
+import com.rudra.aks.batch.tasklet.Step2Tasklet;
+import com.rudra.aks.batch.tasklet.Step3Tasklet;
 import com.rudra.aks.batch.util.CustomChunkListener;
 import com.rudra.aks.batch.util.FirsthJobListener;
 
@@ -183,7 +185,7 @@ public class BatchConfig {
     	return taskExecutor;
     }
     
-    @Bean(name = "firstBatchJob")
+   // @Bean(name = "firstBatchJob")
     public Job job(@Qualifier("step1") Step step1) {
     	return jobs.get("firstBatchJob")
     			.incrementer(new RunIdIncrementer())
@@ -192,7 +194,7 @@ public class BatchConfig {
     			.build();
     }
     
-    /*@Bean
+    @Bean
     protected Step step2() {
         return steps.get("step2").tasklet(new Step2Tasklet()).build();
     }
@@ -206,19 +208,19 @@ public class BatchConfig {
     protected Step step4(ItemReader<UserBO> reader, ItemProcessor<UserBO, UserBO> processor, ItemWriter<UserBO> writer) {
         return steps.get("step4")
         			//.flow(flowBuilder()).build().execute();
-        			.<UserBO, UserBO> chunk(10000)
+        			.<UserBO, UserBO> chunk(10)
         			.reader(reader)//.faultTolerant().retryLimit(3).backOffPolicy()
         			.processor(processor)
         			.writer(writer)
         			.build();
     }
  
-    //@Bean(name = "paralleljobs")
+    @Bean(name = "paralleljobs")
     public	Job	parallelJob() {
     	return  jobs.get("paralleljobs")
     				.incrementer(new RunIdIncrementer())
     				.start(step1(itemReader(), itemProcessor(), dbItemWriter()))
-    				.split(new SimpleAsyncTaskExecutor()).add(flowBuilder())
+    				.split(taskExecutor()).add(flowBuilder())
     				.next(step4(itemReader(), itemProcessor(), dbItemWriter()))
     				.end().build();
 
@@ -228,6 +230,6 @@ public class BatchConfig {
 	private Flow	flowBuilder() {
     	final Flow	flow1 = new FlowBuilder<Flow>("flowto23").from(step2()).next(step3()).end();
     	return flow1;
-    }*/
+    }
 
 }
